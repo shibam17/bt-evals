@@ -1,0 +1,16 @@
+name: Braintrust Eval Gate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: braintrustdata/eval-action@v2
+        with:
+          api_key: ${{ secrets.BRAINTRUST_API_KEY }}
+          runtime: python
+          paths: charge.eval.py
