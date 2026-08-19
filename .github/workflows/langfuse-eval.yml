@@ -14,5 +14,5 @@ jobs:
           langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
           langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
           langfuse_base_url: https://us.cloud.langfuse.com
-          experiment_file: langfuse_experiment.py
+          experiment_path: langfuse_experiment.py
           should_fail_on_regression: true
