@@ -1,0 +1,54 @@
+import json
+import urllib.request
+
+from langfuse import Evaluation, RegressionError
+from langfuse.experiment import LocalExperimentItem
+
+AGENT_URL = "http://ecommerce-agent.34.177.114.165.nip.io/chat"
+
+dataset = [
+    LocalExperimentItem(
+        input="When am I charged for my order?",
+        expected_output="You are charged when the order ships.",
+    )
+]
+
+
+def task(item):
+    req = urllib.request.Request(
+        AGENT_URL,
+        data=json.dumps({"message": item["input"]}).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        body = json.loads(resp.read().decode("utf-8"))
+    return body["response"]
+
+
+def ships_scorer(*, input, output, expected_output, metadata, **kwargs):
+    text = output.lower()
+    if "ship" in text and "at purchase" not in text:
+        return Evaluation(name="ships_scorer", value=1.0)
+    return Evaluation(name="ships_scorer", value=0.0)
+
+
+def experiment(context):
+    result = context.run_experiment(
+        name="ecommerce-charge-gate",
+        data=dataset,
+        task=task,
+        evaluators=[ships_scorer],
+    )
+
+    for item_result in result.item_results:
+        for ev in item_result.evaluations:
+            if ev.name == "ships_scorer" and ev.value < 1.0:
+                raise RegressionError(
+                    result=result,
+                    metric="ships_scorer",
+                    value=ev.value,
+                    threshold=1.0,
+                )
+
+    return result

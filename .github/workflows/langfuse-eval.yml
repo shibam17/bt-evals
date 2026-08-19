@@ -1,0 +1,18 @@
+name: Langfuse Eval Gate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: langfuse/experiment-action@v1.0.8
+        with:
+          langfuse_public_key: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          langfuse_secret_key: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          langfuse_base_url: https://us.cloud.langfuse.com
+          experiment_file: langfuse_experiment.py
+          should_fail_on_regression: true
